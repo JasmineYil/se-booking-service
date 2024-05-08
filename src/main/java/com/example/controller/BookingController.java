@@ -6,8 +6,10 @@ import com.example.service.BookingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/bookings")
@@ -20,9 +22,10 @@ public class BookingController {
     }
 
     @PostMapping
-    public ResponseEntity<String> createBooking(@RequestBody BookingRequestDto bookingRequestDto) {
+    public ResponseEntity<String> createBooking(@RequestBody BookingRequestDto bookingRequestDto, ServerWebExchange serverWebExchange) {
         try {
-            bookingService.bookCar(bookingRequestDto);
+            String jwtToken = Objects.requireNonNull(serverWebExchange.getRequest().getCookies().getFirst("jwtToken")).getValue();
+            bookingService.bookCar(bookingRequestDto, jwtToken);
             return ResponseEntity.status(HttpStatus.CREATED).body("Booking successful");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid request");
@@ -44,9 +47,10 @@ public class BookingController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getCurrentUserBookings() {
+    public ResponseEntity<?> getCurrentUserBookings(ServerWebExchange serverWebExchange) {
         try {
-            List<Booking> bookings = bookingService.getAllBookingsForCurrentUser();
+            String jwtToken = Objects.requireNonNull(serverWebExchange.getRequest().getCookies().getFirst("jwtToken")).getValue();
+            List<Booking> bookings = bookingService.getAllBookingsForCurrentUser(jwtToken);
             return ResponseEntity.status(HttpStatus.OK).body(bookings);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred please try again.");
