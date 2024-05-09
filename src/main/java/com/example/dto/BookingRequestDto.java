@@ -5,7 +5,7 @@ import java.time.LocalDate;
 
 public class BookingRequestDto {
 
-    private String cardId;
+    private String carId;
     private LocalDate pickupDate;
     private LocalDate returnDate;
     private LocalDate bookingDate;
@@ -13,8 +13,8 @@ public class BookingRequestDto {
 
     public BookingRequestDto() {}
 
-    public BookingRequestDto(String cardId, LocalDate pickupDate, LocalDate returnDate, LocalDate bookingDate, BigDecimal price) {
-        this.cardId = cardId;
+    public BookingRequestDto(String carId, LocalDate pickupDate, LocalDate returnDate, LocalDate bookingDate, BigDecimal price) {
+        this.carId = carId;
         this.pickupDate = pickupDate;
         this.returnDate = returnDate;
         this.bookingDate = bookingDate;
@@ -29,12 +29,12 @@ public class BookingRequestDto {
         this.bookingDate = bookingDate;
     }
 
-    public String getCardId() {
-        return cardId;
+    public String getCarId() {
+        return carId;
     }
 
-    public void setCardId(String cardId) {
-        this.cardId = cardId;
+    public void setCarId(String carId) {
+        this.carId = carId;
     }
 
     public LocalDate getPickupDate() {
