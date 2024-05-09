@@ -1,6 +1,7 @@
 package com.example.service;
 
 import com.example.dto.BookingRequestDto;
+import com.example.dto.BookingResponseDto;
 import com.example.kafka.BookingMessageProducer;
 import com.example.model.Booking;
 import com.example.repository.BookingRepository;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class BookingService {
@@ -32,10 +34,13 @@ public class BookingService {
     }
 
     @Transactional(readOnly = true)
-    public List<Booking> getAllBookingsForCurrentUser(String jwtToken) {
+    public List<BookingResponseDto> getAllBookingsForCurrentUser(String jwtToken) {
         String email = getCurrentUserEmail(jwtToken);
+        List<Booking> bookingList = bookingRepository.findBookingsByCustomerEmail(email);
 
-        return bookingRepository.findBookingsByCustomerEmail(email);
+        return bookingList.stream()
+                .map(this::mapOrderToCustomerBookingsResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -51,6 +56,17 @@ public class BookingService {
 
         bookingRepository.delete(booking);
         bookingMessageProducer.sendBookingMessage(bookingRequestDto);
+    }
+
+    private BookingResponseDto mapOrderToCustomerBookingsResponseDto(Booking booking) {
+        return new BookingResponseDto(
+                booking.getBookingId(),
+                booking.getCarId(),
+                booking.getPrice(),
+                booking.getBookingDate(),
+                booking.getReturnDate(),
+                booking.getPickupDate()
+        );
     }
 
     private Booking bookingRequestDtoToBooking(BookingRequestDto bookingRequestDto, String email) {
