@@ -1,7 +1,7 @@
 package com.example.controller;
 
 import com.example.dto.BookingRequestDto;
-import com.example.model.Booking;
+import com.example.dto.BookingResponseDto;
 import com.example.service.BookingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,37 +23,21 @@ public class BookingController {
 
     @PostMapping
     public ResponseEntity<String> createBooking(@RequestBody BookingRequestDto bookingRequestDto, ServerWebExchange serverWebExchange) {
-        try {
-            String jwtToken = Objects.requireNonNull(serverWebExchange.getRequest().getCookies().getFirst("jwtToken")).getValue();
-            bookingService.bookCar(bookingRequestDto, jwtToken);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Booking successful");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid request");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred, please try again");
-        }
+        String jwtToken = Objects.requireNonNull(serverWebExchange.getRequest().getCookies().getFirst("jwtToken")).getValue();
+        bookingService.bookCar(bookingRequestDto, jwtToken);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Booking successful");
     }
 
     @DeleteMapping("/{bookingId}")
     public ResponseEntity<String> deleteBooking(@PathVariable("bookingId") String bookingId) {
-        try {
-            bookingService.deleteBooking(bookingId);
-            return ResponseEntity.status(HttpStatus.OK).body("Booking deleted successfully");
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid request");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred, please try again");
-        }
+        bookingService.deleteBooking(bookingId);
+        return ResponseEntity.status(HttpStatus.OK).body("Booking deleted successfully");
     }
 
     @GetMapping
-    public ResponseEntity<?> getCurrentUserBookings(ServerWebExchange serverWebExchange) {
-        try {
-            String jwtToken = Objects.requireNonNull(serverWebExchange.getRequest().getCookies().getFirst("jwtToken")).getValue();
-            List<Booking> bookings = bookingService.getAllBookingsForCurrentUser(jwtToken);
-            return ResponseEntity.status(HttpStatus.OK).body(bookings);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred please try again.");
-        }
+    public ResponseEntity<List<BookingResponseDto>> getCurrentUserBookings(ServerWebExchange serverWebExchange) {
+        String jwtToken = Objects.requireNonNull(serverWebExchange.getRequest().getCookies().getFirst("jwtToken")).getValue();
+        List<BookingResponseDto> bookings = bookingService.getAllBookingsForCurrentUser(jwtToken);
+        return ResponseEntity.status(HttpStatus.OK).body(bookings);
     }
 }
