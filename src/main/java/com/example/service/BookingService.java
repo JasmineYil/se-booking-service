@@ -25,11 +25,10 @@ public class BookingService {
     @Transactional
     public void bookCar(BookingRequestDto bookingRequestDto, String jwtToken) {
         String email = getCurrentUserEmail(jwtToken);
-
-        bookingMessageProducer.sendBookingMessage(bookingRequestDto);
         Booking booking = bookingRequestDtoToBooking(bookingRequestDto, email);
 
         bookingRepository.save(booking);
+        bookingMessageProducer.sendBookingMessage(bookingRequestDto);
     }
 
     @Transactional(readOnly = true)
@@ -42,12 +41,21 @@ public class BookingService {
     @Transactional
     public void deleteBooking(String bookingId) {
         Booking booking = bookingRepository.findByBookingId(bookingId);
+
+        BookingRequestDto bookingRequestDto = new BookingRequestDto();
+        bookingRequestDto.setCarId(booking.getCarId());
+        bookingRequestDto.setPrice(booking.getPrice());
+        bookingRequestDto.setPickupDate(booking.getPickupDate());
+        bookingRequestDto.setReturnDate(booking.getReturnDate());
+        bookingRequestDto.setBookingDate(booking.getBookingDate());
+
         bookingRepository.delete(booking);
+        bookingMessageProducer.sendBookingMessage(bookingRequestDto);
     }
 
     private Booking bookingRequestDtoToBooking(BookingRequestDto bookingRequestDto, String email) {
         Booking booking = new Booking();
-        booking.setCarId(bookingRequestDto.getCardId());
+        booking.setCarId(bookingRequestDto.getCarId());
         booking.setPrice(bookingRequestDto.getPrice());
         booking.setBookingDate(bookingRequestDto.getBookingDate());
         booking.setPickupDate(bookingRequestDto.getPickupDate());
@@ -59,6 +67,5 @@ public class BookingService {
 
     private String getCurrentUserEmail(String jwtToken) {
         return jwtDecoderService.getEmailFromToken(jwtToken);
-        //return "test2@test.com";
     }
 }
